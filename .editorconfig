@@ -1,0 +1,33 @@
+# EditorConfig - Additional protection layer for read-only files
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ============================================================================
+# READ-ONLY SOURCE FILES - DO NOT EDIT
+# ============================================================================
+# The webflow-source-files directory contains reference files only
+# These files must never be modified by any editor or AI assistant
+
+[webflow-source-files/**]
+# Mark as read-only (editor-specific, but provides additional protection)
+# These files are the source of truth and should only be viewed, never edited
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+
+[webflow-source-files/index.html]
+# HTML source file - READ ONLY
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+
+[webflow-source-files/style.css]
+# CSS source file - READ ONLY
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+

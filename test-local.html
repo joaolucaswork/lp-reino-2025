@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Local - Reino Capital</title>
+  <style>
+    /* Estilos básicos para visualização */
+    body {
+      font-family: 'Satoshi Variable', Arial, sans-serif;
+      padding: 2rem;
+      background: #fef4da;
+    }
+    .profile-card_wrapper {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .top-card_wrapper {
+      margin-bottom: 1.5rem;
+    }
+    .name-people {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .titulo-lead {
+      font-size: 1rem;
+      color: #565656;
+      font-weight: 500;
+    }
+    .info-data {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+    .visual-block-card {
+      width: 4px;
+      height: 4px;
+      background: #daa521;
+      border-radius: 50%;
+    }
+    .data-cadastro {
+      font-size: 0.875rem;
+      color: #565656;
+    }
+    .status {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f0f0f0;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center; margin-bottom: 2rem;">
+    🧪 Teste Local - Card Info Mapper
+  </h1>
+
+  <!-- Estrutura idêntica ao Webflow -->
+  <div card-info="bg-text-color" class="profile-card_wrapper">
+    <div class="top-card_wrapper">
+      <div card-info="name" class="name-people">******</div>
+      <div card-info="title" class="titulo-lead">Investidor Explorador</div>
+    </div>
+    
+    <div card-info="elements" class="info-data">
+      <div>RC</div>
+      <div card-info="mini" class="visual-block-card"></div>
+      <div card-info="date" class="data-cadastro">07.10.2025</div>
+    </div>
+    
+    <div card-info="ilustration" class="ilustration-center"></div>
+  </div>
+
+  <div id="status" class="status">
+    ⏳ Aguardando inicialização do Webflow...
+  </div>
+
+  <!-- Simula o Webflow array -->
+  <script>
+    window.Webflow = window.Webflow || [];
+    
+    // Log para debug
+    const originalPush = window.Webflow.push;
+    window.Webflow.push = function(...args) {
+      console.log('✅ Webflow.push() chamado');
+      document.getElementById('status').className = 'status success';
+      document.getElementById('status').textContent = '✅ Código TypeScript inicializado com sucesso!';
+      return originalPush.apply(this, args);
+    };
+
+    // Simula o evento de ready do Webflow
+    setTimeout(() => {
+      console.log('🚀 Simulando Webflow ready...');
+      window.Webflow.forEach(fn => fn());
+    }, 100);
+  </script>
+
+  <!-- Seu código compilado -->
+  <script defer src="http://localhost:3000/index.js"></script>
+</body>
+</html>
+

@@ -14,6 +14,9 @@ const LIVE_RELOAD = !PRODUCTION;
 const SERVE_PORT = 3000;
 const SERVE_ORIGIN = `http://localhost:${SERVE_PORT}`;
 
+// HTTPS config for local development (optional)
+const USE_HTTPS = process.env.USE_HTTPS === 'true';
+
 // Create context
 const context = await esbuild.context({
   bundle: true,

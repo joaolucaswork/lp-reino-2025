@@ -1,0 +1,50 @@
+# ============================================================================
+# AUGMENT IGNORE FILE - READ-ONLY PROTECTION
+# ============================================================================
+# This file marks directories and files that should NEVER be modified by
+# Augment Agent or any AI coding assistant.
+#
+# CRITICAL: The webflow-source-files/ directory contains the source of truth
+# for the entire project structure and styling. These files must remain
+# read-only at all times.
+# ============================================================================
+
+# ====================
+# READ-ONLY SOURCE FILES
+# ====================
+# These files are the authoritative source for HTML structure and CSS styling
+# They serve as reference only and must NEVER be edited, modified, or overwritten
+
+webflow-source-files/
+webflow-source-files/**
+webflow-source-files/index.html
+webflow-source-files/style.css
+
+# ====================
+# ADDITIONAL PROTECTIONS
+# ====================
+# Standard files that should not be modified without explicit permission
+
+# Dependencies
+node_modules/
+node_modules/**
+
+# Build outputs
+dist/
+dist/**
+
+# Lock files (should only be modified by package managers)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# ====================
+# NOTES
+# ====================
+# - The webflow-source-files/ directory is the PRIMARY protection target
+# - These files contain the complete HTML structure and CSS styling
+# - Any implementation should reference these files but never modify them
+# - If changes are needed to the source files, they must be done manually
+#   outside of the AI coding environment
+# ============================================================================
+
