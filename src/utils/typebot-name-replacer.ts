@@ -48,6 +48,8 @@ interface NameReplacerConfig {
   userIdAttributeValue?: string;
   /** Pattern to match asterisks (default: /\*+/g) */
   asteriskPattern?: RegExp;
+  /** Additional elements to activate (relative to profile card) */
+  additionalActiveElements?: string[];
   /** Enable debug logging */
   debug?: boolean;
 }
@@ -64,6 +66,7 @@ const DEFAULT_CONFIG: Required<NameReplacerConfig> = {
   nameAttributeValue: 'name',
   userIdAttributeValue: 'random-code',
   asteriskPattern: /\*+/g,
+  additionalActiveElements: ['.shadow-yellow', '.visual-block-card'],
   debug: false,
 };
 
@@ -318,9 +321,18 @@ export class TypebotNameReplacer {
       return;
     }
 
-    // Add the active class
+    // Add the active class to the profile card
     profileCard.classList.add(this.config.activeClass);
     this.log(`Profile card activated with class: ${this.config.activeClass}`);
+
+    // Activate additional elements (e.g., .shadow-yellow, .visual-block-card)
+    this.config.additionalActiveElements.forEach((selector) => {
+      const element = profileCard.querySelector(selector);
+      if (element) {
+        element.classList.add(this.config.activeClass);
+        this.log(`Additional element activated: ${selector}`);
+      }
+    });
   }
 
   /**

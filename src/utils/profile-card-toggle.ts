@@ -6,14 +6,32 @@
  */
 
 /**
+ * Configuration for additional elements to toggle
+ */
+interface AdditionalToggleElement {
+  /** CSS selector for the element (relative to profile card) */
+  selector: string;
+  /** Class name to toggle */
+  activeClass: string;
+}
+
+/**
  * Profile card wrapper selector
  */
 const PROFILE_CARD_SELECTOR = '.profile-card_wrapper';
 
 /**
- * Active state class name
+ * Active state class name for profile card
  */
 const ACTIVE_CLASS = 'active_fill';
+
+/**
+ * Additional elements to toggle when profile card is activated
+ */
+const ADDITIONAL_TOGGLE_ELEMENTS: AdditionalToggleElement[] = [
+  { selector: '.visual-block-card', activeClass: 'active' },
+  { selector: '.shadow-yellow', activeClass: 'active' },
+];
 
 /**
  * Extended HTMLElement interface with toggle state
@@ -30,11 +48,24 @@ interface ProfileCardElement extends HTMLElement {
 const toggleAllCards = (isActive: boolean): void => {
   const cards = document.querySelectorAll<HTMLElement>(PROFILE_CARD_SELECTOR);
   cards.forEach((card) => {
+    // Toggle active class on the profile card itself
     if (isActive) {
       card.classList.add(ACTIVE_CLASS);
     } else {
       card.classList.remove(ACTIVE_CLASS);
     }
+
+    // Toggle active class on additional elements
+    ADDITIONAL_TOGGLE_ELEMENTS.forEach(({ selector, activeClass }) => {
+      const element = card.querySelector<HTMLElement>(selector);
+      if (element) {
+        if (isActive) {
+          element.classList.add(activeClass);
+        } else {
+          element.classList.remove(activeClass);
+        }
+      }
+    });
   });
 };
 
