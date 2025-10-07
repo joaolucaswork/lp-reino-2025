@@ -8909,6 +8909,10 @@ figcaption {
   overflow: auto;
 }
 
+.hero-right-content_wrapper {
+  background-color: #fff;
+}
+
 .hero-lp-main_wrapper {
   grid-column-gap: 0px;
   grid-row-gap: 0px;
@@ -8926,8 +8930,11 @@ figcaption {
 }
 
 .profile-card_wrapper {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   color: #c49726;
-  background-color: #534010;
+  cursor: pointer;
+  background-color: #534010a3;
   border: 1px solid #c3962e;
   border-radius: .88rem;
   flex-flow: column;
@@ -8944,8 +8951,20 @@ figcaption {
   transform: translate(0, 151px)rotate(-9deg);
 }
 
+.profile-card_wrapper:hover {
+  transform: scale(1.02)translate(0, 106px)rotate(-8deg);
+}
+
 .profile-card_wrapper.active_fill {
-  transform: translate(0)rotate(0);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform: scale(1.1)translate(0, -25px)rotate(4deg);
+}
+
+.profile-card_wrapper.active_fill:hover {
+  transform: scale3d(1none, 1none, 1none) translate(0px, -25px) rotate(4deg);
 }
 
 .name-people {
@@ -8962,7 +8981,7 @@ figcaption {
   width: 28px;
   height: 28px;
   position: absolute;
-  inset: auto 1.5rem 1.5rem auto;
+  inset: 1.5rem 1.5rem auto auto;
 }
 
 .info-data {
@@ -8981,7 +9000,7 @@ figcaption {
   display: flex;
 }
 
-.div-block-20 {
+.visual-block-card {
   background-color: #c49725;
   width: 49px;
   height: 100%;
@@ -9016,6 +9035,17 @@ figcaption {
 
 .body-lp {
   background-color: #2d2209;
+}
+
+.div-block-20 {
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  display: flex;
+}
+
+.random-code {
+  font-size: .75rem;
 }
 
 @media screen and (max-width: 991px) {

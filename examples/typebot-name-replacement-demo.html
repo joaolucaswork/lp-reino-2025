@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typebot Name Replacement Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Satoshi Variable', Arial, sans-serif;
+            background: linear-gradient(135deg, #fef4da 0%, #fff 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #3b2f10;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        .description {
+            color: #565656;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h2 {
+            color: #3b2f10;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, #daa521 0%, #3b2f10 100%);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            max-width: 400px;
+            margin: 20px 0;
+        }
+
+        .profile-card .name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .profile-card .title {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .profile-card .info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid #daa521;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b2f10;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #daa521;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #3b2f10;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .log-container {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .log-entry.info {
+            color: #00ff00;
+        }
+
+        .log-entry.warning {
+            color: #ffaa00;
+        }
+
+        .log-entry.error {
+            color: #ff0000;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status.active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status.inactive {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #daa521;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #3b2f10;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Typebot Name Replacement Demo</h1>
+        <p class="description">
+            This demo shows how the Typebot Name Replacer utility works. Enter a name below to see 
+            how asterisks (<span class="highlight">******</span>) are dynamically replaced with the user's name.
+        </p>
+
+        <!-- Demo Section 1: Profile Card -->
+        <div class="demo-section">
+            <h2>1. Profile Card Example</h2>
+            <p>This profile card displays asterisks that will be replaced with the user's name:</p>
+            
+            <div class="profile-card">
+                <div card-info="name" class="name">******</div>
+                <div class="title">Investidor Explorador</div>
+                <div class="info">
+                    <span>RC</span>
+                    <span>07.10.2025</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <input 
+                    type="text" 
+                    id="nameInput" 
+                    placeholder="Digite seu nome aqui..."
+                    value=""
+                />
+                <button id="updateNameBtn">Atualizar Nome</button>
+                <button id="resetBtn">Resetar</button>
+            </div>
+
+            <div class="status inactive" id="status">
+                Status: Aguardando entrada
+            </div>
+        </div>
+
+        <!-- Demo Section 2: Multiple Elements -->
+        <div class="demo-section">
+            <h2>2. Multiple Elements Example</h2>
+            <p>The utility can update multiple elements at once:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                    <strong>Element 1:</strong>
+                    <div card-info="name" style="margin-top: 10px; font-size: 1.2rem; color: #daa521;">******</div>
+                </div>
+                <div style="padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                    <strong>Element 2:</strong>
+                    <div card-info="name" style="margin-top: 10px; font-size: 1.2rem; color: #daa521;">******</div>
+                </div>
+                <div style="padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                    <strong>Element 3:</strong>
+                    <div card-info="name" style="margin-top: 10px; font-size: 1.2rem; color: #daa521;">******</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Section 3: Code Example -->
+        <div class="demo-section">
+            <h2>3. How It Works</h2>
+            <p>The TypebotNameReplacer listens for Typebot events and updates the DOM:</p>
+            
+            <div class="code-block">
+                <code>
+// Initialize the name replacer<br>
+const replacer = initTypebotNameReplacer({<br>
+&nbsp;&nbsp;targetSelector: '[card-info="name"]',<br>
+&nbsp;&nbsp;debug: true<br>
+});<br>
+<br>
+// Manually set a name (for testing)<br>
+replacer.setUserName('João Silva');
+                </code>
+            </div>
+
+            <p style="margin-top: 20px;">In production, the name is automatically captured from Typebot when the user fills out the form.</p>
+        </div>
+
+        <!-- Demo Section 4: Event Log -->
+        <div class="demo-section">
+            <h2>4. Event Log</h2>
+            <p>Monitor all events and updates in real-time:</p>
+            
+            <div class="log-container" id="logContainer">
+                <div class="log-entry info">[INFO] Demo initialized</div>
+                <div class="log-entry info">[INFO] Waiting for user input...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulated Typebot Integration -->
+    <script type="module">
+        // This demo simulates the TypebotNameReplacer functionality
+        // In production, this would be imported from the compiled TypeScript
+
+        class TypebotNameReplacerDemo {
+            constructor() {
+                this.userName = null;
+                this.logContainer = document.getElementById('logContainer');
+                this.statusElement = document.getElementById('status');
+            }
+
+            init() {
+                this.log('TypebotNameReplacer initialized', 'info');
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                document.getElementById('updateNameBtn').addEventListener('click', () => {
+                    const input = document.getElementById('nameInput');
+                    const name = input.value.trim();
+                    
+                    if (name) {
+                        this.setUserName(name);
+                    } else {
+                        this.log('Please enter a name', 'warning');
+                    }
+                });
+
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.reset();
+                });
+
+                document.getElementById('nameInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        document.getElementById('updateNameBtn').click();
+                    }
+                });
+            }
+
+            setUserName(name) {
+                const sanitizedName = this.sanitizeName(name);
+                
+                if (!sanitizedName) {
+                    this.log('Invalid name provided', 'error');
+                    return;
+                }
+
+                this.userName = sanitizedName;
+                this.log(`User name set to: ${this.userName}`, 'info');
+                this.replaceAsterisks();
+                this.updateStatus('active', `Nome ativo: ${this.userName}`);
+            }
+
+            sanitizeName(name) {
+                const sanitized = name
+                    .replace(/[<>]/g, '')
+                    .trim()
+                    .substring(0, 100);
+                
+                if (sanitized !== name) {
+                    this.log('Name was sanitized for security', 'warning');
+                }
+                
+                return sanitized;
+            }
+
+            replaceAsterisks() {
+                const elements = document.querySelectorAll('[card-info="name"]');
+                this.log(`Found ${elements.length} element(s) to update`, 'info');
+
+                elements.forEach((element, index) => {
+                    const oldText = element.textContent;
+                    element.textContent = element.textContent.replace(/\*+/g, this.userName);
+                    this.log(`Updated element ${index + 1}: "${oldText}" → "${element.textContent}"`, 'info');
+                });
+            }
+
+            reset() {
+                this.userName = null;
+                const elements = document.querySelectorAll('[card-info="name"]');
+                
+                elements.forEach((element) => {
+                    element.textContent = '******';
+                });
+
+                document.getElementById('nameInput').value = '';
+                this.updateStatus('inactive', 'Status: Aguardando entrada');
+                this.log('Reset complete - asterisks restored', 'info');
+            }
+
+            updateStatus(type, message) {
+                this.statusElement.className = `status ${type}`;
+                this.statusElement.textContent = message;
+            }
+
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString('pt-BR');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+                
+                this.logContainer.appendChild(entry);
+                this.logContainer.scrollTop = this.logContainer.scrollHeight;
+            }
+        }
+
+        // Initialize the demo
+        const demo = new TypebotNameReplacerDemo();
+        demo.init();
+
+        // Make it available globally for console testing
+        window.typebotDemo = demo;
+    </script>
+</body>
+</html>
+
