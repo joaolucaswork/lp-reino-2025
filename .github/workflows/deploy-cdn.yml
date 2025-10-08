@@ -1,0 +1,138 @@
+name: Deploy to CDN
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.1)'
+        required: false
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build production bundle
+        run: pnpm build
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Deploy to dist branch
+        run: |
+          # Get version from tag or input
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          
+          echo "Deploying version: $VERSION"
+          
+          # Create or checkout dist branch
+          git fetch origin dist:dist || git checkout --orphan dist
+          git checkout dist
+          
+          # Remove all files except dist/
+          git rm -rf . || true
+          
+          # Copy dist files to root
+          git checkout ${{ github.ref_name }} -- dist/
+          mv dist/* .
+          rm -rf dist/
+          
+          # Create README
+          cat > README.md << EOF
+          # Distribution Branch
+          
+          This branch contains the compiled production build for CDN distribution via jsDelivr.
+          
+          **⚠️ Do not edit this branch manually!**
+          
+          ## Usage
+          
+          \`\`\`html
+          <script defer src="https://cdn.jsdelivr.net/gh/joaolucaswork/lp-reino-2025@dist/index.js"></script>
+          \`\`\`
+          
+          Or use a specific version:
+          
+          \`\`\`html
+          <script defer src="https://cdn.jsdelivr.net/gh/joaolucaswork/lp-reino-2025@${VERSION}/index.js"></script>
+          \`\`\`
+          
+          ## Build Information
+          
+          - **Version:** ${VERSION}
+          - **Built from:** ${{ github.ref_name }}
+          - **Build date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          - **Commit:** ${{ github.sha }}
+          - **Workflow:** ${{ github.workflow }}
+          
+          ---
+          
+          Auto-deployed by GitHub Actions
+          EOF
+          
+          # Commit and push
+          git add .
+          git commit -m "Deploy ${VERSION} - Built from ${{ github.ref_name }} @ ${{ github.sha }}"
+          git push origin dist --force
+          
+          echo "✅ Deployment completed!"
+          echo "📦 jsDelivr URL: https://cdn.jsdelivr.net/gh/joaolucaswork/lp-reino-2025@dist/index.js"
+      
+      - name: Create deployment summary
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          
+          echo "## 🚀 CDN Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 jsDelivr URLs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Latest version (auto-updates):**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`html" >> $GITHUB_STEP_SUMMARY
+          echo '<script defer src="https://cdn.jsdelivr.net/gh/joaolucaswork/lp-reino-2025@dist/index.js"></script>' >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$VERSION" != "latest" ]; then
+            echo "**Specific version (${VERSION}):**" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`html" >> $GITHUB_STEP_SUMMARY
+            echo "<script defer src=\"https://cdn.jsdelivr.net/gh/joaolucaswork/lp-reino-2025@${VERSION}/index.js\"></script>" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ℹ️ Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+

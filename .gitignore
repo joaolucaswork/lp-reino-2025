@@ -25,4 +25,4 @@ typings/
 .env
 
 # Production files
-# dist - Commented out to allow jsDelivr CDN access
+dist
