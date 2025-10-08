@@ -321,16 +321,17 @@ export class TypebotNameReplacer {
       return;
     }
 
-    // Add the active class to the profile card
+    // Add the active_fill class to the profile card
     profileCard.classList.add(this.config.activeClass);
     this.log(`Profile card activated with class: ${this.config.activeClass}`);
 
     // Activate additional elements (e.g., .shadow-yellow, .visual-block-card)
+    // Note: These elements use 'active' class, not 'active_fill'
     this.config.additionalActiveElements.forEach((selector) => {
       const element = profileCard.querySelector(selector);
       if (element) {
-        element.classList.add(this.config.activeClass);
-        this.log(`Additional element activated: ${selector}`);
+        element.classList.add('active'); // Fixed: Use 'active' instead of activeClass
+        this.log(`Additional element activated: ${selector} with class 'active'`);
       }
     });
   }
