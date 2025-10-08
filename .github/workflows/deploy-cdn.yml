@@ -57,6 +57,11 @@ jobs:
           # Save current branch/commit
           CURRENT_REF="${{ github.ref_name }}"
 
+          # Save dist files to temp directory before switching branches
+          TEMP_DIR=$(mktemp -d)
+          cp -r dist/* $TEMP_DIR/
+          echo "Build files saved to temp directory: $TEMP_DIR"
+
           # Try to fetch dist branch, create if doesn't exist
           if git ls-remote --exit-code --heads origin dist; then
             echo "Dist branch exists, fetching..."
@@ -64,21 +69,19 @@ jobs:
             git checkout dist
             # Remove all files
             git rm -rf . || true
+            rm -rf * .* 2>/dev/null || true
           else
             echo "Dist branch doesn't exist, creating orphan branch..."
             git checkout --orphan dist
-            # Remove all files from staging
+            # Remove all files from staging and working directory
             git rm -rf . || true
+            rm -rf * .* 2>/dev/null || true
           fi
 
-          # Copy dist files from the original branch
-          git checkout ${CURRENT_REF} -- dist/
-
-          # Move dist contents to root
-          if [ -d "dist" ]; then
-            mv dist/* . 2>/dev/null || true
-            rm -rf dist/
-          fi
+          # Copy dist files from temp to root
+          cp -r $TEMP_DIR/* .
+          rm -rf $TEMP_DIR
+          echo "Build files copied to dist branch root"
           
           # Create README
           cat > README.md << EOF
