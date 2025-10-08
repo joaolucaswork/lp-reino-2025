@@ -55,22 +55,22 @@ echo -e "\n${YELLOW}📋 Step 5: Preparing dist branch...${NC}"
 if git show-ref --verify --quiet refs/heads/$DIST_BRANCH; then
     echo -e "${BLUE}Checking out existing local dist branch...${NC}"
     git checkout $DIST_BRANCH
-    # Remove all files
+    # Remove all files except .git
     git rm -rf . 2>/dev/null || true
-    rm -rf * .* 2>/dev/null || true
+    find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
 elif git ls-remote --exit-code --heads origin $DIST_BRANCH >/dev/null 2>&1; then
     echo -e "${BLUE}Fetching existing remote dist branch...${NC}"
     git fetch origin $DIST_BRANCH:$DIST_BRANCH
     git checkout $DIST_BRANCH
-    # Remove all files
+    # Remove all files except .git
     git rm -rf . 2>/dev/null || true
-    rm -rf * .* 2>/dev/null || true
+    find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
 else
     echo -e "${BLUE}Creating new orphan dist branch...${NC}"
     git checkout --orphan $DIST_BRANCH
-    # Remove all files from staging and working directory
+    # Remove all files from staging and working directory except .git
     git rm -rf . 2>/dev/null || true
-    rm -rf * .* 2>/dev/null || true
+    find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
 fi
 echo -e "${GREEN}✅ Dist branch ready${NC}"
 
