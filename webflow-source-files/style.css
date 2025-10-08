@@ -9085,16 +9085,17 @@ figcaption {
   justify-content: space-between;
   align-items: flex-start;
   padding: 1.25rem;
+  transition: transform .4s cubic-bezier(.175, .885, .32, 1.275);
   display: flex;
   position: absolute;
   inset: 0%;
+  transform: rotate(0);
 }
 
 .rotation-elements.active {
   opacity: 100;
   pointer-events: auto;
   transform-style: preserve-3d;
-  transition-property: none;
   transform: rotateX(0)rotateY(-180deg)rotateZ(0);
 }
 
@@ -9154,8 +9155,35 @@ figcaption {
 }
 
 .shadow-yellow.active {
+  opacity: .62;
+  color: #c497265e;
   background-color: #ffc63852;
-  height: 140px;
+  width: 280px;
+  height: 120px;
+}
+
+.image-wrap {
+  z-index: 1;
+  perspective: 1000px;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.image-9 {
+  width: 100%;
+}
+
+.shine {
+  opacity: .6;
+  filter: blur(60px);
+  background-color: #fff;
+  border-radius: 50%;
+  width: 14rem;
+  height: 14rem;
+  position: absolute;
 }
 
 @media screen and (max-width: 991px) {
