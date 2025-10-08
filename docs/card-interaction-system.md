@@ -59,7 +59,7 @@ Used to identify the main card wrapper that handles click interactions.
 
 ## 2. Card Toggle Behavior
 
-### A. Click Interaction (Method 1)
+### A. Card Click Interaction (Method 1)
 
 **Trigger:** User clicks on `.profile-card_wrapper` element
 
@@ -69,10 +69,10 @@ Used to identify the main card wrapper that handles click interactions.
 
 1. **Profile Card Wrapper** (`.profile-card_wrapper`)
    - ✅ **ADD:** `active_fill`
-   
+
 2. **Visual Block Card** (`.visual-block-card`)
    - ✅ **ADD:** `active`
-   
+
 3. **Shadow Element** (`.shadow-yellow`)
    - ✅ **ADD:** `active`
 
@@ -92,6 +92,7 @@ Used to identify the main card wrapper that handles click interactions.
   - Height changes to `140px`
 
 **Toggle Behavior:**
+
 - Click once: Activates (adds classes)
 - Click again: Deactivates (removes classes)
 - Uses `toggleState` counter (0 or 1) to track state
@@ -108,10 +109,10 @@ Used to identify the main card wrapper that handles click interactions.
 
 1. **Profile Card Wrapper** (`.profile-card_wrapper`)
    - ✅ **ADD:** `active_fill`
-   
+
 2. **Shadow Element** (`.shadow-yellow`)
    - ✅ **ADD:** `active_fill` (⚠️ **INCORRECT** - should be `active`)
-   
+
 3. **Visual Block Card** (`.visual-block-card`)
    - ✅ **ADD:** `active_fill` (⚠️ **INCORRECT** - should be `active`)
 
@@ -122,6 +123,7 @@ Used to identify the main card wrapper that handles click interactions.
 - **Shadow Element:** ❌ **NO EFFECT** (wrong class applied)
 
 **Additional Actions:**
+
 - Replaces asterisks (`******`) with user's name in all `[card-info="name"]` elements
 - Adds `name-updated` class to updated elements
 
@@ -138,10 +140,10 @@ Used to identify the main card wrapper that handles click interactions.
 1. **Profile Card Wrapper** (`.profile-card_wrapper`)
    - ✅ **ADD:** `active_fill`
    - ✅ **ADD:** `rotate`
-   
+
 2. **Front Elements** (`.front-elements`)
    - ✅ **REMOVE:** `active`
-   
+
 3. **Rotation Elements** (`.rotation-elements`)
    - ✅ **ADD:** `active`
 
@@ -163,9 +165,62 @@ Used to identify the main card wrapper that handles click interactions.
   - **Result:** Back face becomes visible
 
 **Additional Actions:**
+
 - Updates email display in `[card-info="email"]` elements
 - Updates phone display in `[card-info="telefone"]` elements (if provided)
 - Only rotates once (uses `hasRotated` flag)
+
+---
+
+### D. Logo Click Interaction (Card Rotation Toggle) - NEW ✨
+
+**Trigger:** User clicks on the Reino Capital logo (`.logo_card`)
+
+**Handler:** `src/utils/logo-card-toggle.ts` - `handleLogoClick()`
+
+**Classes Applied (First Click - Rotate to Back):**
+
+1. **Profile Card Wrapper** (`.profile-card_wrapper`)
+   - ✅ **ADD:** `active_fill` (if not already present)
+   - ✅ **ADD:** `rotate`
+
+2. **Front Elements** (`.front-elements`)
+   - ✅ **REMOVE:** `active`
+
+3. **Rotation Elements** (`.rotation-elements`)
+   - ✅ **ADD:** `active`
+
+**Classes Applied (Second Click - Rotate to Front):**
+
+1. **Profile Card Wrapper** (`.profile-card_wrapper`)
+   - ✅ **REMOVE:** `rotate`
+
+2. **Front Elements** (`.front-elements`)
+   - ✅ **ADD:** `active`
+
+3. **Rotation Elements** (`.rotation-elements`)
+   - ✅ **REMOVE:** `active`
+
+**Visual Effects:**
+
+Same as email input interaction, but with **toggle behavior**:
+
+- First click: Card flips to show back face
+- Second click: Card flips back to show front face
+- Can be toggled indefinitely
+
+**Special Features:**
+
+- **Event Propagation Prevention:** Stops click event from bubbling to parent card
+- **Both Logos Clickable:** Works on both front face logo and back face logo
+- **Custom Event Dispatch:** Emits `card-rotation-toggle` event for other components
+- **Shared Rotation Logic:** Uses `CardRotationManager` for consistent behavior
+
+**Additional Actions:**
+
+- Dispatches custom `card-rotation-toggle` event with rotation state
+- Adds cursor pointer to logo elements for better UX
+- Prevents conflict with card click handler
 
 ---
 
@@ -189,6 +244,7 @@ shadowYellow.classList.add('active');
 ```
 
 **Result:**
+
 - ✅ Profile card scales and rotates
 - ✅ Visual block expands width
 - ✅ Shadow changes color and height
@@ -207,6 +263,7 @@ visualBlockCard.classList.add('active_fill');  // ❌ WRONG CLASS
 ```
 
 **Result:**
+
 - ✅ Profile card scales and rotates
 - ❌ Visual block does NOT expand (wrong class)
 - ❌ Shadow does NOT change (wrong class)
@@ -244,6 +301,7 @@ this.config.additionalActiveElements.forEach((selector) => {
 **Applied to:** `.profile-card_wrapper` only
 
 **CSS Effects:**
+
 ```css
 .profile-card_wrapper.active_fill {
   backdrop-filter: blur(2px);
@@ -330,6 +388,7 @@ private activateProfileCard(): void {
 ```
 
 **Benefits:**
+
 - ✅ Minimal code changes
 - ✅ Maintains existing architecture
 - ✅ Synchronizes both interaction methods
@@ -422,12 +481,14 @@ export class CardStateManager {
 ```
 
 **Benefits:**
+
 - ✅ Single source of truth for card states
 - ✅ Easier to maintain and extend
 - ✅ Prevents inconsistencies between interaction methods
 - ✅ Better separation of concerns
 
 **Drawbacks:**
+
 - ❌ Requires refactoring existing code
 - ❌ More complex implementation
 - ❌ Potential for breaking changes
@@ -456,4 +517,3 @@ element.classList.add('active');  // ✅ Correct
 ```
 
 This ensures that when the user types their name, the card becomes active with the exact same visual state as clicking it, creating a consistent user experience.
-

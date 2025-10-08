@@ -1,6 +1,7 @@
 import { initCardInfoMapper } from '$utils/card-info-mapper';
 import { initCardUpdates } from '$utils/card-updater';
 import { greetUser } from '$utils/greet';
+import { initLogoCardToggle } from '$utils/logo-card-toggle';
 import { initProfileCardToggle } from '$utils/profile-card-toggle';
 import { initTypebotEmailHandler } from '$utils/typebot-email-handler';
 import { initTypebotNameReplacer } from '$utils/typebot-name-replacer';
@@ -35,6 +36,13 @@ window.Webflow.push(() => {
     activeFillClass: 'active_fill',
     rotateClass: 'rotate',
     activeClass: 'active',
+    debug: true, // Enable debug logging in development
+  });
+
+  // Initialize logo card toggle
+  // This will allow users to toggle card rotation by clicking the Reino Capital logo
+  initLogoCardToggle({
+    logoSelector: '.logo_card',
     debug: true, // Enable debug logging in development
   });
 });
