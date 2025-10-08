@@ -47,20 +47,34 @@ echo -e "${GREEN}✅ Build completed successfully${NC}"
 # Step 4: Create or checkout dist branch
 echo -e "\n${YELLOW}📋 Step 4: Preparing dist branch...${NC}"
 if git show-ref --verify --quiet refs/heads/$DIST_BRANCH; then
-    echo -e "${BLUE}Checking out existing dist branch...${NC}"
+    echo -e "${BLUE}Checking out existing local dist branch...${NC}"
     git checkout $DIST_BRANCH
+    # Remove all files
+    git rm -rf . 2>/dev/null || true
+elif git ls-remote --exit-code --heads origin $DIST_BRANCH >/dev/null 2>&1; then
+    echo -e "${BLUE}Fetching existing remote dist branch...${NC}"
+    git fetch origin $DIST_BRANCH:$DIST_BRANCH
+    git checkout $DIST_BRANCH
+    # Remove all files
+    git rm -rf . 2>/dev/null || true
 else
-    echo -e "${BLUE}Creating new dist branch...${NC}"
+    echo -e "${BLUE}Creating new orphan dist branch...${NC}"
     git checkout --orphan $DIST_BRANCH
-    git rm -rf .
+    # Remove all files from staging
+    git rm -rf . 2>/dev/null || true
 fi
 echo -e "${GREEN}✅ Dist branch ready${NC}"
 
 # Step 5: Copy dist files to root
 echo -e "\n${YELLOW}📋 Step 5: Copying build files...${NC}"
 git checkout $CURRENT_BRANCH -- $DIST_DIR
-mv $DIST_DIR/* .
-rm -rf $DIST_DIR
+
+# Move dist contents to root
+if [ -d "$DIST_DIR" ]; then
+    mv $DIST_DIR/* . 2>/dev/null || true
+    mv $DIST_DIR/.* . 2>/dev/null || true  # Move hidden files too
+    rm -rf $DIST_DIR
+fi
 
 # Create a minimal README for the dist branch
 cat > README.md << EOF
