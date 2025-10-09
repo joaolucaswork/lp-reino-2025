@@ -1068,6 +1068,10 @@ figcaption {
   font-size: 20px;
 }
 
+.text-size-large.text-style-muted.v2 {
+  font-size: 1.13rem;
+}
+
 .fs-styleguide_header {
   background-color: var(--aa--background-primary\<deleted\|variable-9f6b6bb4-0795-c8ab-f302-bbebab6f2554\>);
   color: var(--aa--text-alternate\<deleted\|variable-2688eaeb-df93-32fe-efb9-d54fbd7bd424\>);
@@ -8911,7 +8915,7 @@ figcaption {
   padding-right: 2rem;
   display: flex;
   position: relative;
-  overflow: visible;
+  overflow: auto;
 }
 
 .hero-right-content_wrapper {
@@ -8927,6 +8931,7 @@ figcaption {
   justify-content: space-between;
   height: 100svh;
   display: grid;
+  overflow: clip;
 }
 
 .hero-lp-main_wrapper.video-full {
@@ -8997,10 +9002,17 @@ figcaption {
 }
 
 .logo_card {
+  transform: scale3d(1none, 1none, 1none);
+  transform-style: preserve-3d;
   width: 28px;
   height: 28px;
+  transition: transform .4s cubic-bezier(.175, .885, .32, 1.275);
   position: absolute;
   inset: 1.5rem 1.5rem auto auto;
+}
+
+.logo_card:hover {
+  transform: scale(1.2);
 }
 
 .info-data {
@@ -9059,6 +9071,14 @@ figcaption {
 
 .paragraph-reino {
   max-width: 40rem;
+}
+
+.paragraph-reino.v2 {
+  grid-column-gap: .88rem;
+  grid-row-gap: .88rem;
+  flex-flow: column;
+  max-width: 50rem;
+  display: flex;
 }
 
 .body-lp {
@@ -9184,6 +9204,15 @@ figcaption {
   width: 14rem;
   height: 14rem;
   position: absolute;
+}
+
+.div-block-20 {
+  width: 240px;
+}
+
+.obrigado-pagina {
+  color: #c49726;
+  font-weight: 700;
 }
 
 @media screen and (max-width: 991px) {

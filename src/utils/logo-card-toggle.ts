@@ -232,4 +232,3 @@ export function onCardRotationToggle(
     document.removeEventListener('card-rotation-toggle', handler);
   };
 }
-

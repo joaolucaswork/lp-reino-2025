@@ -3,6 +3,7 @@ import { initCardUpdates } from '$utils/card-updater';
 import { greetUser } from '$utils/greet';
 import { initLogoCardToggle } from '$utils/logo-card-toggle';
 import { initProfileCardToggle } from '$utils/profile-card-toggle';
+import { initSwiperController } from '$utils/swiper-controller';
 import { initTypebotEmailHandler } from '$utils/typebot-email-handler';
 import { initTypebotNameReplacer } from '$utils/typebot-name-replacer';
 
@@ -43,6 +44,18 @@ window.Webflow.push(() => {
   // This will allow users to toggle card rotation by clicking the Reino Capital logo
   initLogoCardToggle({
     logoSelector: '.logo_card',
+    debug: true, // Enable debug logging in development
+  });
+
+  // Initialize Swiper controller
+  // This will handle vertical slide transitions when Typebot form is completed
+  initSwiperController({
+    containerSelector: '.swiper.is-landingpage',
+    direction: 'vertical',
+    slidesPerView: 1,
+    allowTouchMove: false, // Disable user control
+    speed: 600, // Minimal transition effect
+    transitionDelay: 500, // Small delay for smoother experience
     debug: true, // Enable debug logging in development
   });
 });

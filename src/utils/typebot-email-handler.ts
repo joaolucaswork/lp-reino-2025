@@ -267,7 +267,9 @@ export class TypebotEmailHandler {
     // Add active_fill and rotate classes to profile card
     profileCard.classList.add(this.config.activeFillClass);
     profileCard.classList.add(this.config.rotateClass);
-    this.log(`Added classes to profile card: ${this.config.activeFillClass}, ${this.config.rotateClass}`);
+    this.log(
+      `Added classes to profile card: ${this.config.activeFillClass}, ${this.config.rotateClass}`
+    );
 
     // Find front and rotation elements
     const frontElements = document.querySelector(this.config.frontElementsSelector);
@@ -358,4 +360,3 @@ export function initTypebotEmailHandler(config: EmailHandlerConfig = {}): Typebo
 
   return handler;
 }
-

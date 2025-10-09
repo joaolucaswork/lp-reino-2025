@@ -190,10 +190,9 @@ export class CardRotationManager {
     if (currentState === CardRotationState.FRONT) {
       this.rotateToBack();
       return CardRotationState.BACK;
-    } else {
-      this.rotateToFront();
-      return CardRotationState.FRONT;
     }
+    this.rotateToFront();
+    return CardRotationState.FRONT;
   }
 
   /**
@@ -254,4 +253,3 @@ export function isCardRotated(config: CardRotationConfig = {}): boolean {
   const manager = new CardRotationManager(config);
   return manager.isRotated();
 }
-
