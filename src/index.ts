@@ -3,6 +3,7 @@ import { initCardUpdates } from '$utils/card-updater';
 import { greetUser } from '$utils/greet';
 import { initLogoCardToggle } from '$utils/logo-card-toggle';
 import { initProfileCardToggle } from '$utils/profile-card-toggle';
+import { initSVGIllustration } from '$utils/svg-illustration-generator';
 import { initSwiperController } from '$utils/swiper-controller';
 import { initTypebotEmailHandler } from '$utils/typebot-email-handler';
 import { initTypebotNameReplacer } from '$utils/typebot-name-replacer';
@@ -56,6 +57,12 @@ window.Webflow.push(() => {
     allowTouchMove: false, // Disable user control
     speed: 600, // Minimal transition effect
     transitionDelay: 500, // Small delay for smoother experience
+    debug: true, // Enable debug logging in development
+  });
+
+  // Initialize SVG illustrations
+  // This will replace illustration divs with dynamic SVG shapes
+  initSVGIllustration({
     debug: true, // Enable debug logging in development
   });
 });
