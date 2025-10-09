@@ -2,6 +2,7 @@ import { initCardInfoMapper } from '$utils/card-info-mapper';
 import { initCardUpdates } from '$utils/card-updater';
 import { greetUser } from '$utils/greet';
 import { initLogoCardToggle } from '$utils/logo-card-toggle';
+import { initProfileCardTilt } from '$utils/profile-card-tilt';
 import { initProfileCardToggle } from '$utils/profile-card-toggle';
 import { initSVGIllustration } from '$utils/svg-illustration-generator';
 import { initSwiperController } from '$utils/swiper-controller';
@@ -63,6 +64,18 @@ window.Webflow.push(() => {
   // Initialize SVG illustrations
   // This will replace illustration divs with dynamic SVG shapes
   initSVGIllustration({
+    debug: true, // Enable debug logging in development
+  });
+
+  // Initialize profile card tilt effect with glare/shine
+  // This will add a 3D tilt effect to the main profile card that follows mouse movement
+  // The glare effect creates a reflective highlight that moves across the card
+  initProfileCardTilt({
+    max: 15, // Subtle tilt rotation (15 degrees max)
+    speed: 400, // Smooth transition speed
+    glare: true, // Enable shine/glare effect
+    maxGlare: 0.2, // Subtle shine opacity (20%) - Material Design inspired
+    scale: 1.02, // Slight scale on hover for depth
     debug: true, // Enable debug logging in development
   });
 });
