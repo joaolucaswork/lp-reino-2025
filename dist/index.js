@@ -406,6 +406,301 @@
   // src/index.ts
   init_live_reload();
 
+  // src/utils/card-color-switcher.ts
+  init_live_reload();
+  var DEFAULT_CONFIG = {
+    cardSelector: '.profile-card_wrapper[is-main="true"]',
+    visualBlockSelector: '[card-info="mini"].visual-block-card',
+    infoDataSelector: ".info-data",
+    backgroundOpacity: 0.64,
+    debug: false
+  };
+  var COLOR_THEMES = [
+    {
+      name: "Renda Fixa",
+      backgroundColor: "#a2883b",
+      // Medium gold (HSL: 45°, 47%, 43%)
+      borderColor: "#c9a84d",
+      // Lighter gold (HSL: 45°, 47%, 55%)
+      textColor: "#e5d4a0",
+      // Light gold (HSL: 45°, 47%, 75%)
+      visualBlockColor: "#c9a84d"
+      // Lighter gold
+    },
+    {
+      name: "Fundo de Investimento",
+      backgroundColor: "#e3ad0c",
+      // Bright gold (HSL: 43°, 91%, 47%)
+      borderColor: "#f5c93d",
+      // Lighter gold (HSL: 43°, 91%, 60%)
+      textColor: "#fce89f",
+      // Very light gold (HSL: 43°, 91%, 80%)
+      visualBlockColor: "#f5c93d"
+      // Lighter gold
+    },
+    {
+      name: "Renda Vari\xE1vel",
+      backgroundColor: "#5d4e2a",
+      // Dark bronze (HSL: 42°, 38%, 26%)
+      borderColor: "#9a8a5e",
+      // Medium bronze (HSL: 42°, 38%, 50%)
+      textColor: "#c9bc95",
+      // Light bronze (HSL: 42°, 38%, 68%)
+      visualBlockColor: "#9a8a5e"
+      // Medium bronze
+    },
+    {
+      name: "Internacional",
+      backgroundColor: "#bdaa6f",
+      // Light gold (HSL: 45°, 40%, 59%)
+      borderColor: "#d4c28f",
+      // Lighter gold (HSL: 45°, 40%, 70%)
+      textColor: "#ebe3c9",
+      // Very light gold (HSL: 45°, 40%, 85%)
+      visualBlockColor: "#d4c28f"
+      // Lighter gold
+    },
+    {
+      name: "COE",
+      backgroundColor: "#d17d00",
+      // Dark orange (HSL: 36°, 100%, 41%)
+      borderColor: "#f59d33",
+      // Medium orange (HSL: 36°, 100%, 55%)
+      textColor: "#ffc780",
+      // Light orange (HSL: 36°, 100%, 75%)
+      visualBlockColor: "#f59d33"
+      // Medium orange
+    },
+    {
+      name: "Previd\xEAncia",
+      backgroundColor: "#8c5e00",
+      // Dark brown (HSL: 40°, 100%, 27%)
+      borderColor: "#b37d1a",
+      // Medium brown (HSL: 40°, 100%, 40%)
+      textColor: "#e0b324",
+      // Light brown/gold (HSL: 40°, 100%, 55%)
+      visualBlockColor: "#b37d1a"
+      // Medium brown
+    },
+    {
+      name: "Outros",
+      backgroundColor: "#4f4f4f",
+      // Dark gray (HSL: 0°, 0%, 31%)
+      borderColor: "#8c8c8c",
+      // Medium gray (HSL: 0°, 0%, 55%)
+      textColor: "#b3b3b3",
+      // Light gray (HSL: 0°, 0%, 70%)
+      visualBlockColor: "#8c8c8c"
+      // Medium gray
+    }
+  ];
+  var hexToRgba = (hex, opacity) => {
+    const cleanHex = hex.replace("#", "");
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+  var CardColorSwitcher = class {
+    config;
+    currentThemeIndex = 0;
+    isInitialized = false;
+    boundHandleClick;
+    constructor(config = {}) {
+      this.config = { ...DEFAULT_CONFIG, ...config };
+      this.boundHandleClick = this.handleVisualBlockClick.bind(this);
+      this.currentThemeIndex = Math.floor(Math.random() * COLOR_THEMES.length);
+    }
+    /**
+     * Log debug messages if debug mode is enabled
+     */
+    log(...args) {
+      if (this.config.debug) {
+        console.log("[CardColorSwitcher]", ...args);
+      }
+    }
+    /**
+     * Apply a color theme to the card
+     * @param theme The color theme to apply
+     */
+    applyTheme(theme) {
+      const card = document.querySelector(this.config.cardSelector);
+      if (!card) {
+        this.log("Card element not found");
+        return;
+      }
+      const bgColorRgba = hexToRgba(theme.backgroundColor, this.config.backgroundOpacity);
+      card.style.backgroundColor = bgColorRgba;
+      card.style.borderColor = theme.borderColor;
+      card.style.color = theme.textColor;
+      const infoDataElements = card.querySelectorAll(this.config.infoDataSelector);
+      if (infoDataElements.length > 0) {
+        this.log(`Updating ${infoDataElements.length} info-data element(s)`);
+        infoDataElements.forEach((infoData, index) => {
+          infoData.style.color = theme.textColor;
+          infoData.style.borderColor = theme.borderColor;
+          this.log(`Updated info-data element ${index + 1}/${infoDataElements.length}`);
+        });
+      } else {
+        this.log("No info-data elements found");
+      }
+      const visualBlock = card.querySelector(this.config.visualBlockSelector);
+      if (visualBlock) {
+        visualBlock.style.backgroundColor = theme.visualBlockColor;
+      }
+      this.updateSVGIllustrationColors(theme);
+      card.setAttribute("data-color-theme", theme.name);
+      card.setAttribute("data-theme-svg-color", theme.visualBlockColor);
+      this.log(`Applied theme: ${theme.name}`, theme);
+    }
+    /**
+     * Update SVG illustration colors to match the current theme
+     * @param theme The color theme to apply to SVG illustrations
+     */
+    updateSVGIllustrationColors(theme) {
+      const svgElements = document.querySelectorAll('[card-info="ilustration"]');
+      if (svgElements.length === 0) {
+        this.log("No SVG illustration elements found");
+        return;
+      }
+      this.log(`Updating ${svgElements.length} SVG illustration(s) with theme colors`);
+      svgElements.forEach((svgElement, index) => {
+        try {
+          const pathElements = svgElement.querySelectorAll("path");
+          pathElements.forEach((path) => {
+            path.setAttribute("fill", theme.visualBlockColor);
+            const currentOpacity = path.getAttribute("fill-opacity");
+            if (currentOpacity) {
+              path.setAttribute("fill-opacity", currentOpacity);
+            }
+          });
+          this.log(`Updated SVG illustration ${index + 1}/${svgElements.length}`);
+        } catch (error) {
+          this.log(`Failed to update SVG illustration ${index + 1}:`, error);
+        }
+      });
+    }
+    /**
+     * Cycle to the next color theme
+     */
+    cycleTheme() {
+      this.currentThemeIndex = (this.currentThemeIndex + 1) % COLOR_THEMES.length;
+      const theme = COLOR_THEMES[this.currentThemeIndex];
+      this.applyTheme(theme);
+    }
+    /**
+     * Handle click event on visual block element
+     * @param event The click event
+     */
+    handleVisualBlockClick(event) {
+      event.stopPropagation();
+      event.preventDefault();
+      this.log("Visual block clicked, cycling color theme");
+      this.cycleTheme();
+    }
+    /**
+     * Initialize the color switcher
+     * Attaches click event listener to the visual block element
+     * Applies a random theme on initialization
+     */
+    init() {
+      if (this.isInitialized) {
+        this.log("Already initialized");
+        return;
+      }
+      const card = document.querySelector(this.config.cardSelector);
+      if (!card) {
+        this.log("Card element not found, cannot initialize");
+        return;
+      }
+      const visualBlock = card.querySelector(this.config.visualBlockSelector);
+      if (!visualBlock) {
+        this.log("Visual block element not found, cannot initialize");
+        return;
+      }
+      visualBlock.addEventListener("click", this.boundHandleClick);
+      visualBlock.style.cursor = "pointer";
+      const initialTheme = COLOR_THEMES[this.currentThemeIndex];
+      this.applyTheme(initialTheme);
+      this.log(
+        `Initialized with random theme: ${initialTheme.name} (index: ${this.currentThemeIndex})`
+      );
+      this.isInitialized = true;
+      this.log("Color switcher initialized");
+    }
+    /**
+     * Set a specific theme by index
+     * @param index Theme index (0-6)
+     */
+    setTheme(index) {
+      if (index < 0 || index >= COLOR_THEMES.length) {
+        this.log(`Invalid theme index: ${index}`);
+        return;
+      }
+      this.currentThemeIndex = index;
+      this.applyTheme(COLOR_THEMES[index]);
+    }
+    /**
+     * Set a specific theme by category name
+     * @param categoryName Category name (e.g., 'Renda Fixa')
+     */
+    setThemeByName(categoryName) {
+      const index = COLOR_THEMES.findIndex((theme) => theme.name === categoryName);
+      if (index === -1) {
+        this.log(`Theme not found: ${categoryName}`);
+        return;
+      }
+      this.setTheme(index);
+    }
+    /**
+     * Get current theme
+     * @returns Current color theme
+     */
+    getCurrentTheme() {
+      return COLOR_THEMES[this.currentThemeIndex];
+    }
+    /**
+     * Get all available themes
+     * @returns Array of all color themes
+     */
+    getAllThemes() {
+      return [...COLOR_THEMES];
+    }
+    /**
+     * Remove event listeners and clean up
+     */
+    destroy() {
+      const card = document.querySelector(this.config.cardSelector);
+      if (!card) {
+        return;
+      }
+      const visualBlock = card.querySelector(this.config.visualBlockSelector);
+      if (visualBlock) {
+        visualBlock.removeEventListener("click", this.boundHandleClick);
+        visualBlock.style.cursor = "";
+      }
+      this.isInitialized = false;
+      this.log("Color switcher destroyed");
+    }
+  };
+  var initCardColorSwitcher = (config = {}) => {
+    const switcher = new CardColorSwitcher(config);
+    switcher.init();
+    document.addEventListener("user-name-personalization", (event) => {
+      if (config.debug) {
+        console.log("[CardColorSwitcher] User name personalization detected:", event.detail);
+      }
+      const { themeIndex, themeName } = event.detail;
+      switcher.setTheme(themeIndex);
+      if (config.debug) {
+        console.log(
+          `[CardColorSwitcher] Applied name-based theme: ${themeName} (index: ${themeIndex})`
+        );
+      }
+    });
+    return switcher;
+  };
+
   // src/utils/card-info-mapper.ts
   init_live_reload();
   var CARD_INFO_SELECTORS = {
@@ -581,7 +876,7 @@
 
   // src/utils/card-rotation-manager.ts
   init_live_reload();
-  var DEFAULT_CONFIG = {
+  var DEFAULT_CONFIG2 = {
     profileCardSelector: ".profile-card_wrapper",
     frontElementsSelector: ".front-elements",
     rotationElementsSelector: ".rotation-elements",
@@ -593,7 +888,7 @@
   var CardRotationManager = class {
     config;
     constructor(config = {}) {
-      this.config = { ...DEFAULT_CONFIG, ...config };
+      this.config = { ...DEFAULT_CONFIG2, ...config };
     }
     /**
      * Get the current rotation state of the card
@@ -703,7 +998,7 @@
   };
 
   // src/utils/logo-card-toggle.ts
-  var DEFAULT_CONFIG2 = {
+  var DEFAULT_CONFIG3 = {
     logoSelector: ".logo_card",
     debug: false
   };
@@ -713,7 +1008,7 @@
     isInitialized = false;
     boundHandleClick;
     constructor(config = {}) {
-      this.config = { ...DEFAULT_CONFIG2, ...config };
+      this.config = { ...DEFAULT_CONFIG3, ...config };
       this.rotationManager = new CardRotationManager({ debug: this.config.debug });
       this.boundHandleClick = this.handleLogoClick.bind(this);
     }
@@ -853,7 +1148,7 @@
   // src/utils/profile-card-tilt.ts
   init_live_reload();
   var import_vanilla_tilt = __toESM(require_vanilla_tilt(), 1);
-  var DEFAULT_CONFIG3 = {
+  var DEFAULT_CONFIG4 = {
     cardSelector: '.profile-card_wrapper[is-main="true"]',
     max: 15,
     speed: 400,
@@ -866,7 +1161,7 @@
     debug: false
   };
   function initProfileCardTilt(config) {
-    const settings = { ...DEFAULT_CONFIG3, ...config };
+    const settings = { ...DEFAULT_CONFIG4, ...config };
     if (settings.debug) {
       console.log("[ProfileCardTilt] Initializing with config:", settings);
     }
@@ -1056,7 +1351,7 @@
 
   // src/utils/svg-illustration-generator.ts
   init_live_reload();
-  var DEFAULT_CONFIG4 = {
+  var DEFAULT_CONFIG5 = {
     illustrationSelector: '[card-info="ilustration"]',
     viewBox: { width: 120, height: 120 },
     brandColor: "#daa521",
@@ -1347,7 +1642,7 @@
      * @param config Optional configuration (merged with defaults)
      */
     constructor(config = {}) {
-      this.config = { ...DEFAULT_CONFIG4, ...config };
+      this.config = { ...DEFAULT_CONFIG5, ...config };
       this.random = new SeededRandom(this.config.seed);
       this.shapeGenerators = [
         { name: "Rounded Star", generate: generateRoundedStar },
@@ -1372,12 +1667,23 @@
     /**
      * Regenerate all star illustrations with new random shapes
      * Useful for refreshing illustrations without page reload
+     * Maintains the current theme color if set by the color switcher
+     * @param seed Optional seed for deterministic generation (e.g., from user name)
+     * @param shapeIndex Optional shape generator index (0-2) to use specific shape type
      */
-    regenerate() {
+    regenerate(seed, shapeIndex) {
       try {
         this.log("Regenerating star illustrations...");
         const startTime = performance.now();
-        this.random = new SeededRandom(Date.now());
+        const useSeed = seed !== void 0 ? seed : Date.now();
+        this.random = new SeededRandom(useSeed);
+        if (seed !== void 0) {
+          this.log(`Using deterministic seed: ${seed}`);
+        }
+        if (shapeIndex !== void 0) {
+          this.log(`Using specific shape generator index: ${shapeIndex}`);
+        }
+        const currentThemeColor = this.getCurrentThemeColor();
         const svgElements = document.querySelectorAll(
           `${this.config.illustrationSelector}`
         );
@@ -1386,6 +1692,9 @@
           return;
         }
         this.log(`Regenerating ${svgElements.length} illustration(s)`);
+        if (currentThemeColor) {
+          this.log(`Using current theme color: ${currentThemeColor}`);
+        }
         svgElements.forEach((svgElement, index) => {
           try {
             const hasRotationClass = svgElement.classList.contains("rotation");
@@ -1396,11 +1705,12 @@
             const shapeConfig = {
               width: viewBox.width,
               height: viewBox.height,
-              color: brandColor,
+              color: currentThemeColor || brandColor,
+              // Use theme color if available
               opacity: this.random.nextFloat(opacityRange.min, opacityRange.max),
               random: this.random
             };
-            const shape = this.selectAndGenerateShape(shapeConfig);
+            const shape = this.selectAndGenerateShape(shapeConfig, shapeIndex);
             if (Array.isArray(shape)) {
               shape.forEach((s) => svgElement.appendChild(s));
             } else {
@@ -1415,6 +1725,30 @@
         this.log(`Regeneration complete in ${(endTime - startTime).toFixed(2)}ms`);
       } catch (error) {
         this.handleError("Regeneration failed", error);
+      }
+    }
+    /**
+     * Get the current theme color from the card's data attribute
+     * This is set by the CardColorSwitcher when a theme is applied
+     * @returns Current theme SVG color or null if not set
+     */
+    getCurrentThemeColor() {
+      try {
+        const card = document.querySelector('.profile-card_wrapper[is-main="true"]');
+        if (!card) {
+          this.log("Card element not found, using default color");
+          return null;
+        }
+        const themeColor = card.getAttribute("data-theme-svg-color");
+        if (themeColor) {
+          this.log(`Found theme color in card data attribute: ${themeColor}`);
+          return themeColor;
+        }
+        this.log("No theme color found in card data attribute, using default");
+        return null;
+      } catch (error) {
+        this.log("Error getting theme color:", error);
+        return null;
       }
     }
     /**
@@ -1471,11 +1805,12 @@
     /**
      * Select a random shape generator and generate shape
      * @param config Shape configuration
+     * @param shapeIndex Optional specific shape generator index to use
      * @returns Generated SVG element(s)
      */
-    selectAndGenerateShape(config) {
+    selectAndGenerateShape(config, shapeIndex) {
       try {
-        const generator = this.random.choice(this.shapeGenerators);
+        const generator = shapeIndex !== void 0 && shapeIndex >= 0 && shapeIndex < this.shapeGenerators.length ? this.shapeGenerators[shapeIndex] : this.random.choice(this.shapeGenerators);
         this.log(`Selected generator: ${generator.name}`);
         const startTime = performance.now();
         const shape = generator.generate(config);
@@ -1516,11 +1851,27 @@
   function initSVGIllustration(config = {}) {
     const generator = new SVGIllustrationGenerator(config);
     generator.init();
+    let lastPersonalization = null;
+    document.addEventListener("user-name-personalization", (event) => {
+      if (config.debug) {
+        console.log("[SVGIllustration] User name personalization detected:", event.detail);
+      }
+      const { seed, shapeIndex } = event.detail;
+      lastPersonalization = { seed, shapeIndex };
+      generator.regenerate(seed, shapeIndex);
+    });
     document.addEventListener("card-rotation-toggle", () => {
       if (config.debug) {
         console.log("[SVGIllustration] Card rotation detected, regenerating stars...");
       }
-      generator.regenerate();
+      if (lastPersonalization) {
+        if (config.debug) {
+          console.log("[SVGIllustration] Maintaining personalized shape during rotation");
+        }
+        generator.regenerate(lastPersonalization.seed, lastPersonalization.shapeIndex);
+      } else {
+        generator.regenerate();
+      }
     });
     return generator;
   }
@@ -5576,7 +5927,7 @@
   Swiper.use([Resize, Observer]);
 
   // src/utils/swiper-controller.ts
-  var DEFAULT_CONFIG5 = {
+  var DEFAULT_CONFIG6 = {
     containerSelector: ".swiper.is-landingpage",
     direction: "vertical",
     slidesPerView: 1,
@@ -5591,7 +5942,7 @@
     isListening = false;
     hasTransitioned = false;
     constructor(config = {}) {
-      this.config = { ...DEFAULT_CONFIG5, ...config };
+      this.config = { ...DEFAULT_CONFIG6, ...config };
     }
     /**
      * Initialize the Swiper controller
@@ -5765,7 +6116,7 @@
 
   // src/utils/typebot-email-handler.ts
   init_live_reload();
-  var DEFAULT_CONFIG6 = {
+  var DEFAULT_CONFIG7 = {
     profileCardSelector: ".profile-card_wrapper",
     frontElementsSelector: ".front-elements",
     rotationElementsSelector: ".rotation-elements",
@@ -5783,7 +6134,7 @@
     isListening = false;
     hasRotated = false;
     constructor(config = {}) {
-      this.config = { ...DEFAULT_CONFIG6, ...config };
+      this.config = { ...DEFAULT_CONFIG7, ...config };
     }
     /**
      * Initialize the email handler and start listening for Typebot events
@@ -6003,7 +6354,61 @@
 
   // src/utils/typebot-name-replacer.ts
   init_live_reload();
-  var DEFAULT_CONFIG7 = {
+
+  // src/utils/name-based-personalization.ts
+  init_live_reload();
+  function hashString(str) {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) + hash + str.charCodeAt(i);
+    }
+    return Math.abs(hash | 0);
+  }
+  function getThemeIndexFromName(name) {
+    const hash = hashString(name);
+    return hash % 7;
+  }
+  function getShapeIndexFromName(name) {
+    const hash = hashString(name);
+    return Math.floor(hash / 7 % 3);
+  }
+  function getSeedFromName(name) {
+    return hashString(name);
+  }
+  function getThemeNameFromIndex(index) {
+    const themeNames = [
+      "Renda Fixa",
+      "Fundo de Investimento",
+      "Renda Vari\xE1vel",
+      "Internacional",
+      "COE",
+      "Previd\xEAncia",
+      "Outros"
+    ];
+    return themeNames[index % 7];
+  }
+  function getShapeNameFromIndex(index) {
+    const shapeNames = ["Rounded Star", "Variant Star", "Distorted Star"];
+    return shapeNames[index % 3];
+  }
+  function getPersonalizationFromName(name) {
+    const hash = hashString(name);
+    const themeIndex = getThemeIndexFromName(name);
+    const shapeIndex = getShapeIndexFromName(name);
+    const seed = getSeedFromName(name);
+    return {
+      name,
+      hash,
+      themeIndex,
+      themeName: getThemeNameFromIndex(themeIndex),
+      shapeIndex,
+      shapeName: getShapeNameFromIndex(shapeIndex),
+      seed
+    };
+  }
+
+  // src/utils/typebot-name-replacer.ts
+  var DEFAULT_CONFIG8 = {
     targetSelector: '[card-info="name"]',
     userIdSelector: '[card-info="random-code"]',
     profileCardSelector: ".profile-card_wrapper",
@@ -6021,7 +6426,7 @@
     userId = null;
     isListening = false;
     constructor(config = {}) {
-      this.config = { ...DEFAULT_CONFIG7, ...config };
+      this.config = { ...DEFAULT_CONFIG8, ...config };
     }
     /**
      * Initialize the name replacer and start listening for Typebot events
@@ -6110,6 +6515,7 @@
       this.log("User name updated to:", this.userName);
       this.replaceAsterisks();
       this.activateProfileCard();
+      this.generatePersonalizedIllustration();
     }
     /**
      * Sanitize the user name (remove HTML tags, trim, limit length)
@@ -6230,6 +6636,35 @@
       this.log("User name and ID reset");
     }
     /**
+     * Generate personalized SVG illustration based on user name
+     * Uses name-based hashing to create unique, deterministic shapes and colors
+     */
+    generatePersonalizedIllustration() {
+      if (!this.userName) {
+        this.log("No user name available, skipping personalized illustration");
+        return;
+      }
+      try {
+        this.log("Generating personalized illustration for:", this.userName);
+        const personalization = getPersonalizationFromName(this.userName);
+        this.log("Personalization data:", personalization);
+        const event = new CustomEvent("user-name-personalization", {
+          detail: {
+            name: this.userName,
+            themeIndex: personalization.themeIndex,
+            themeName: personalization.themeName,
+            shapeIndex: personalization.shapeIndex,
+            shapeName: personalization.shapeName,
+            seed: personalization.seed
+          }
+        });
+        document.dispatchEvent(event);
+        this.log("Dispatched user-name-personalization event");
+      } catch (error) {
+        this.log("Error generating personalized illustration:", error);
+      }
+    }
+    /**
      * Log messages if debug mode is enabled
      */
     log(...args) {
@@ -6314,6 +6749,10 @@
       // Subtle shine opacity (20%) - Material Design inspired
       scale: 1.02,
       // Slight scale on hover for depth
+      debug: true
+      // Enable debug logging in development
+    });
+    initCardColorSwitcher({
       debug: true
       // Enable debug logging in development
     });

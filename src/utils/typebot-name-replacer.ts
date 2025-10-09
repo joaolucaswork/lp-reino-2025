@@ -10,7 +10,10 @@
  * - Replaces all asterisks with the user's name
  * - Updates profile card elements in real-time
  * - Handles multiple asterisk patterns (*, **, ***, etc.)
+ * - Generates personalized SVG illustrations based on user name
  */
+
+import { getPersonalizationFromName } from './name-based-personalization';
 
 interface TypebotMessage {
   type: string;
@@ -206,6 +209,9 @@ export class TypebotNameReplacer {
 
     // Activate the profile card
     this.activateProfileCard();
+
+    // Generate personalized SVG illustration based on name
+    this.generatePersonalizedIllustration();
   }
 
   /**
@@ -374,6 +380,43 @@ export class TypebotNameReplacer {
 
     // Optionally restore asterisks (if needed)
     // This would require storing the original text
+  }
+
+  /**
+   * Generate personalized SVG illustration based on user name
+   * Uses name-based hashing to create unique, deterministic shapes and colors
+   */
+  private generatePersonalizedIllustration(): void {
+    if (!this.userName) {
+      this.log('No user name available, skipping personalized illustration');
+      return;
+    }
+
+    try {
+      this.log('Generating personalized illustration for:', this.userName);
+
+      // Get personalization data from name
+      const personalization = getPersonalizationFromName(this.userName);
+      this.log('Personalization data:', personalization);
+
+      // Dispatch custom event with personalization data
+      // This will be caught by the SVG generator and color switcher
+      const event = new CustomEvent('user-name-personalization', {
+        detail: {
+          name: this.userName,
+          themeIndex: personalization.themeIndex,
+          themeName: personalization.themeName,
+          shapeIndex: personalization.shapeIndex,
+          shapeName: personalization.shapeName,
+          seed: personalization.seed,
+        },
+      });
+
+      document.dispatchEvent(event);
+      this.log('Dispatched user-name-personalization event');
+    } catch (error) {
+      this.log('Error generating personalized illustration:', error);
+    }
   }
 
   /**

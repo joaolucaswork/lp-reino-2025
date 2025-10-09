@@ -594,14 +594,28 @@ export class SVGIllustrationGenerator {
   /**
    * Regenerate all star illustrations with new random shapes
    * Useful for refreshing illustrations without page reload
+   * Maintains the current theme color if set by the color switcher
+   * @param seed Optional seed for deterministic generation (e.g., from user name)
+   * @param shapeIndex Optional shape generator index (0-2) to use specific shape type
    */
-  public regenerate(): void {
+  public regenerate(seed?: number, shapeIndex?: number): void {
     try {
       this.log('Regenerating star illustrations...');
       const startTime = performance.now();
 
-      // Reset random generator with new seed for different shapes
-      this.random = new SeededRandom(Date.now());
+      // Use provided seed or generate new one
+      const useSeed = seed !== undefined ? seed : Date.now();
+      this.random = new SeededRandom(useSeed);
+
+      if (seed !== undefined) {
+        this.log(`Using deterministic seed: ${seed}`);
+      }
+      if (shapeIndex !== undefined) {
+        this.log(`Using specific shape generator index: ${shapeIndex}`);
+      }
+
+      // Get current theme color from card data attribute (set by color switcher)
+      const currentThemeColor = this.getCurrentThemeColor();
 
       // Find all existing SVG illustrations and regenerate them
       const svgElements = document.querySelectorAll<SVGSVGElement>(
@@ -614,6 +628,9 @@ export class SVGIllustrationGenerator {
       }
 
       this.log(`Regenerating ${svgElements.length} illustration(s)`);
+      if (currentThemeColor) {
+        this.log(`Using current theme color: ${currentThemeColor}`);
+      }
 
       svgElements.forEach((svgElement, index) => {
         try {
@@ -624,17 +641,17 @@ export class SVGIllustrationGenerator {
             svgElement.removeChild(svgElement.firstChild);
           }
 
-          // Generate new shape
+          // Generate new shape with current theme color (or default brand color)
           const { viewBox, brandColor, opacityRange } = this.config;
           const shapeConfig: ShapeConfig = {
             width: viewBox.width,
             height: viewBox.height,
-            color: brandColor,
+            color: currentThemeColor || brandColor, // Use theme color if available
             opacity: this.random.nextFloat(opacityRange.min, opacityRange.max),
             random: this.random,
           };
 
-          const shape = this.selectAndGenerateShape(shapeConfig);
+          const shape = this.selectAndGenerateShape(shapeConfig, shapeIndex);
 
           // Append new shape(s) to SVG
           if (Array.isArray(shape)) {
@@ -653,6 +670,35 @@ export class SVGIllustrationGenerator {
       this.log(`Regeneration complete in ${(endTime - startTime).toFixed(2)}ms`);
     } catch (error) {
       this.handleError('Regeneration failed', error as Error);
+    }
+  }
+
+  /**
+   * Get the current theme color from the card's data attribute
+   * This is set by the CardColorSwitcher when a theme is applied
+   * @returns Current theme SVG color or null if not set
+   */
+  private getCurrentThemeColor(): string | null {
+    try {
+      // Query the main profile card
+      const card = document.querySelector<HTMLElement>('.profile-card_wrapper[is-main="true"]');
+      if (!card) {
+        this.log('Card element not found, using default color');
+        return null;
+      }
+
+      // Get the theme SVG color from data attribute
+      const themeColor = card.getAttribute('data-theme-svg-color');
+      if (themeColor) {
+        this.log(`Found theme color in card data attribute: ${themeColor}`);
+        return themeColor;
+      }
+
+      this.log('No theme color found in card data attribute, using default');
+      return null;
+    } catch (error) {
+      this.log('Error getting theme color:', error);
+      return null;
     }
   }
 
@@ -728,11 +774,20 @@ export class SVGIllustrationGenerator {
   /**
    * Select a random shape generator and generate shape
    * @param config Shape configuration
+   * @param shapeIndex Optional specific shape generator index to use
    * @returns Generated SVG element(s)
    */
-  private selectAndGenerateShape(config: ShapeConfig): SVGElement | SVGElement[] {
+  private selectAndGenerateShape(
+    config: ShapeConfig,
+    shapeIndex?: number
+  ): SVGElement | SVGElement[] {
     try {
-      const generator = this.random.choice(this.shapeGenerators);
+      // Use specific shape generator if index provided, otherwise random
+      const generator =
+        shapeIndex !== undefined && shapeIndex >= 0 && shapeIndex < this.shapeGenerators.length
+          ? this.shapeGenerators[shapeIndex]
+          : this.random.choice(this.shapeGenerators);
+
       this.log(`Selected generator: ${generator.name}`);
 
       const startTime = performance.now();
@@ -784,7 +839,7 @@ export class SVGIllustrationGenerator {
 
 /**
  * Initialize SVG illustration generator with optional configuration
- * Also sets up listener for card rotation events to regenerate stars
+ * Also sets up listeners for card rotation and name-based personalization events
  * @param config Optional configuration
  * @returns SVGIllustrationGenerator instance
  */
@@ -792,12 +847,40 @@ export function initSVGIllustration(config: SVGIllustrationConfig = {}): SVGIllu
   const generator = new SVGIllustrationGenerator(config);
   generator.init();
 
+  // Store the last personalization data for use during card rotation
+  let lastPersonalization: { seed: number; shapeIndex: number } | null = null;
+
+  // Listen for user name personalization events
+  document.addEventListener('user-name-personalization', ((event: CustomEvent) => {
+    if (config.debug) {
+      console.log('[SVGIllustration] User name personalization detected:', event.detail);
+    }
+
+    const { seed, shapeIndex } = event.detail;
+
+    // Store personalization data
+    lastPersonalization = { seed, shapeIndex };
+
+    // Regenerate with name-based seed and shape
+    generator.regenerate(seed, shapeIndex);
+  }) as EventListener);
+
   // Listen for card rotation toggle events to regenerate stars
   document.addEventListener('card-rotation-toggle', () => {
     if (config.debug) {
       console.log('[SVGIllustration] Card rotation detected, regenerating stars...');
     }
-    generator.regenerate();
+
+    // If we have personalization data, use it to maintain the user's unique shape
+    if (lastPersonalization) {
+      if (config.debug) {
+        console.log('[SVGIllustration] Maintaining personalized shape during rotation');
+      }
+      generator.regenerate(lastPersonalization.seed, lastPersonalization.shapeIndex);
+    } else {
+      // No personalization, regenerate with random
+      generator.regenerate();
+    }
   });
 
   return generator;

@@ -1,3 +1,4 @@
+import { initCardColorSwitcher } from '$utils/card-color-switcher';
 import { initCardInfoMapper } from '$utils/card-info-mapper';
 import { initCardUpdates } from '$utils/card-updater';
 import { greetUser } from '$utils/greet';
@@ -76,6 +77,13 @@ window.Webflow.push(() => {
     glare: true, // Enable shine/glare effect
     maxGlare: 0.2, // Subtle shine opacity (20%) - Material Design inspired
     scale: 1.02, // Slight scale on hover for depth
+    debug: true, // Enable debug logging in development
+  });
+
+  // Initialize card color switcher
+  // This will allow users to cycle through investment category color themes
+  // by clicking the visual block element (mini card)
+  initCardColorSwitcher({
     debug: true, // Enable debug logging in development
   });
 });
