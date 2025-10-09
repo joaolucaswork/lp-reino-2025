@@ -64,6 +64,11 @@ jobs:
           cp -r dist/* $TEMP_DIR/
           echo "Build files saved to temp directory: $TEMP_DIR"
 
+          # Clean up any local changes before switching branches
+          echo "Cleaning up local changes..."
+          git reset --hard HEAD
+          git clean -fd
+
           # Try to fetch dist branch, create if doesn't exist
           if git ls-remote --exit-code --heads origin dist; then
             echo "Dist branch exists, fetching..."
