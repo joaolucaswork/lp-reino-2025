@@ -244,8 +244,50 @@ export class TypebotEmailHandler {
   }
 
   /**
+   * Find the currently visible profile card (desktop or mobile)
+   * @returns The visible profile card element or null
+   */
+  private findVisibleProfileCard(): HTMLElement | null {
+    // Check both desktop and mobile card selectors
+    const desktopCard = document.querySelector('.profile-card_wrapper') as HTMLElement;
+    const mobileCard = document.querySelector('.profile-card_wrapper-mobile') as HTMLElement;
+
+    // Determine which card is currently visible by checking computed styles
+    if (desktopCard && this.isElementVisible(desktopCard)) {
+      this.log('Using desktop profile card');
+      return desktopCard;
+    }
+
+    if (mobileCard && this.isElementVisible(mobileCard)) {
+      this.log('Using mobile profile card');
+      return mobileCard;
+    }
+
+    // Fallback to the first card found
+    const fallbackCard = desktopCard || mobileCard;
+    if (fallbackCard) {
+      this.log('Using fallback profile card:', fallbackCard.className);
+      return fallbackCard;
+    }
+
+    this.log('No profile card found');
+    return null;
+  }
+
+  /**
+   * Check if an element is currently visible (not display: none)
+   * @param element The element to check
+   * @returns true if the element is visible, false otherwise
+   */
+  private isElementVisible(element: HTMLElement): boolean {
+    const computedStyle = window.getComputedStyle(element);
+    return computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden';
+  }
+
+  /**
    * Trigger the card rotation animation
    * This adds the rotate class and toggles active states
+   * Now uses the same scoped element selection as the logo click handler
    */
   private triggerCardRotation(): void {
     // Only rotate once
@@ -256,11 +298,11 @@ export class TypebotEmailHandler {
 
     this.log('Triggering card rotation animation');
 
-    // Find the profile card element
-    const profileCard = document.querySelector(this.config.profileCardSelector);
+    // Find the currently visible profile card (desktop or mobile)
+    const profileCard = this.findVisibleProfileCard();
 
     if (!profileCard) {
-      this.log('Profile card not found with selector:', this.config.profileCardSelector);
+      this.log('No visible profile card found');
       return;
     }
 
@@ -271,9 +313,9 @@ export class TypebotEmailHandler {
       `Added classes to profile card: ${this.config.activeFillClass}, ${this.config.rotateClass}`
     );
 
-    // Find front and rotation elements
-    const frontElements = document.querySelector(this.config.frontElementsSelector);
-    const rotationElements = document.querySelector(this.config.rotationElementsSelector);
+    // Find front and rotation elements within the specific card (scoped search)
+    const frontElements = profileCard.querySelector(this.config.frontElementsSelector);
+    const rotationElements = profileCard.querySelector(this.config.rotationElementsSelector);
 
     if (!frontElements) {
       this.log('Front elements not found with selector:', this.config.frontElementsSelector);
