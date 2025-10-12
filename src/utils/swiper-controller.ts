@@ -88,6 +88,57 @@ export class SwiperController {
   }
 
   /**
+   * Inject CSS to ensure touch events pass through for native scrolling
+   */
+  private injectTouchActionCSS(): void {
+    const styleId = 'swiper-touch-action-fix';
+
+    // Check if styles are already injected
+    if (document.getElementById(styleId)) {
+      this.log('Touch action CSS already injected');
+      return;
+    }
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      /* Allow native touch scrolling on Swiper elements */
+      .swiper.is-landingpage {
+        touch-action: pan-y !important;
+        -webkit-touch-callout: default !important;
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+      }
+
+      .swiper-wrapper.is-landingpage {
+        touch-action: pan-y !important;
+      }
+
+      .swiper-slide.is-landingpage {
+        touch-action: pan-y !important;
+        -webkit-touch-callout: default !important;
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+      }
+
+      /* Ensure text content is selectable */
+      .swiper-slide.is-landingpage * {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+      }
+    `;
+
+    document.head.appendChild(style);
+    this.log('Touch action CSS injected successfully');
+  }
+
+  /**
    * Initialize the Swiper instance
    */
   private initSwiper(): void {
@@ -99,6 +150,9 @@ export class SwiperController {
       );
       return;
     }
+
+    // Add CSS to ensure touch events pass through for native scrolling
+    this.injectTouchActionCSS();
 
     this.log('Initializing Swiper with config:', {
       direction: this.config.direction,
@@ -113,6 +167,31 @@ export class SwiperController {
       allowTouchMove: this.config.allowTouchMove,
       speed: this.config.speed,
       effect: 'slide',
+      // Disable all manual interaction methods
+      simulateTouch: false, // Disable mouse drag simulation
+      touchStartPreventDefault: false, // Allow text selection and native touch events
+      touchMoveStopPropagation: false, // Allow page scrolling
+      touchStartForcePreventDefault: false, // Don't force prevent default on touch start
+      touchReleaseOnEdges: true, // Release touch events on slider edges for page scrolling
+      resistance: false, // Disable resistance when reaching slider edge
+      resistanceRatio: 0, // No resistance effect
+      preventInteractionOnTransition: true, // Prevent interaction during transitions
+      allowSlideNext: false, // Disable manual slide next
+      allowSlidePrev: false, // Disable manual slide prev
+      // Disable mouse wheel control
+      mousewheel: false,
+      // Disable keyboard control
+      keyboard: {
+        enabled: false,
+      },
+      // Disable pagination interaction
+      pagination: {
+        clickable: false,
+      },
+      // Disable navigation buttons
+      navigation: {
+        enabled: false,
+      },
       on: {
         init: () => {
           this.log('Swiper initialized successfully');
@@ -187,7 +266,21 @@ export class SwiperController {
     }
 
     this.log(`Transitioning to slide ${index + 1}`);
+
+    // Temporarily enable slide transitions for programmatic control
+    this.swiper.allowSlideNext = true;
+    this.swiper.allowSlidePrev = true;
+
     this.swiper.slideTo(index);
+
+    // Re-disable slide transitions after the transition
+    setTimeout(() => {
+      if (this.swiper) {
+        this.swiper.allowSlideNext = false;
+        this.swiper.allowSlidePrev = false;
+      }
+    }, this.config.speed + 100); // Wait for transition to complete
+
     this.hasTransitioned = true;
   }
 
@@ -200,7 +293,16 @@ export class SwiperController {
       return;
     }
 
+    // Temporarily enable slide transitions for programmatic control
+    this.swiper.allowSlideNext = true;
     this.swiper.slideNext();
+
+    // Re-disable slide transitions after the transition
+    setTimeout(() => {
+      if (this.swiper) {
+        this.swiper.allowSlideNext = false;
+      }
+    }, this.config.speed + 100);
   }
 
   /**
@@ -212,7 +314,16 @@ export class SwiperController {
       return;
     }
 
+    // Temporarily enable slide transitions for programmatic control
+    this.swiper.allowSlidePrev = true;
     this.swiper.slidePrev();
+
+    // Re-disable slide transitions after the transition
+    setTimeout(() => {
+      if (this.swiper) {
+        this.swiper.allowSlidePrev = false;
+      }
+    }, this.config.speed + 100);
   }
 
   /**
@@ -236,7 +347,18 @@ export class SwiperController {
   public reset(): void {
     this.hasTransitioned = false;
     if (this.swiper) {
+      // Temporarily enable slide transitions for reset
+      this.swiper.allowSlideNext = true;
+      this.swiper.allowSlidePrev = true;
       this.swiper.slideTo(0);
+
+      // Re-disable slide transitions after reset
+      setTimeout(() => {
+        if (this.swiper) {
+          this.swiper.allowSlideNext = false;
+          this.swiper.allowSlidePrev = false;
+        }
+      }, this.config.speed + 100);
     }
     this.log('SwiperController reset to initial state');
   }
@@ -257,6 +379,13 @@ export class SwiperController {
     if (this.swiper) {
       this.swiper.destroy();
       this.swiper = null;
+    }
+
+    // Remove injected CSS
+    const styleElement = document.getElementById('swiper-touch-action-fix');
+    if (styleElement) {
+      styleElement.remove();
+      this.log('Touch action CSS removed');
     }
 
     window.removeEventListener('message', this.handleMessage.bind(this));
