@@ -887,15 +887,34 @@
   };
   var CardRotationManager = class {
     config;
+    targetCard = null;
     constructor(config = {}) {
       this.config = { ...DEFAULT_CONFIG2, ...config };
+    }
+    /**
+     * Set the target card element to operate on
+     * @param cardElement The specific card element to rotate
+     */
+    setTargetCard(cardElement) {
+      this.targetCard = cardElement;
+      this.log("Target card set:", cardElement);
+    }
+    /**
+     * Find the profile card element (either target card or first match)
+     * @returns The profile card element or null
+     */
+    findProfileCard() {
+      if (this.targetCard) {
+        return this.targetCard;
+      }
+      return document.querySelector(this.config.profileCardSelector);
     }
     /**
      * Get the current rotation state of the card
      * @returns CardRotationState.FRONT or CardRotationState.BACK
      */
     getRotationState() {
-      const profileCard = document.querySelector(this.config.profileCardSelector);
+      const profileCard = this.findProfileCard();
       if (!profileCard) {
         this.log("Profile card not found, assuming FRONT state");
         return "front" /* FRONT */;
@@ -916,7 +935,7 @@
      */
     rotateToBack() {
       this.log("Rotating card to show back face");
-      const profileCard = document.querySelector(this.config.profileCardSelector);
+      const profileCard = this.findProfileCard();
       if (!profileCard) {
         this.log("Profile card not found with selector:", this.config.profileCardSelector);
         return false;
@@ -927,8 +946,8 @@
       }
       profileCard.classList.add(this.config.rotateClass);
       this.log(`Added ${this.config.rotateClass} class to profile card`);
-      const frontElements = document.querySelector(this.config.frontElementsSelector);
-      const rotationElements = document.querySelector(this.config.rotationElementsSelector);
+      const frontElements = this.targetCard ? this.targetCard.querySelector(this.config.frontElementsSelector) : document.querySelector(this.config.frontElementsSelector);
+      const rotationElements = this.targetCard ? this.targetCard.querySelector(this.config.rotationElementsSelector) : document.querySelector(this.config.rotationElementsSelector);
       if (!frontElements) {
         this.log("Front elements not found with selector:", this.config.frontElementsSelector);
       } else {
@@ -950,15 +969,15 @@
      */
     rotateToFront() {
       this.log("Rotating card to show front face");
-      const profileCard = document.querySelector(this.config.profileCardSelector);
+      const profileCard = this.findProfileCard();
       if (!profileCard) {
         this.log("Profile card not found with selector:", this.config.profileCardSelector);
         return false;
       }
       profileCard.classList.remove(this.config.rotateClass);
       this.log(`Removed ${this.config.rotateClass} class from profile card`);
-      const frontElements = document.querySelector(this.config.frontElementsSelector);
-      const rotationElements = document.querySelector(this.config.rotationElementsSelector);
+      const frontElements = this.targetCard ? this.targetCard.querySelector(this.config.frontElementsSelector) : document.querySelector(this.config.frontElementsSelector);
+      const rotationElements = this.targetCard ? this.targetCard.querySelector(this.config.rotationElementsSelector) : document.querySelector(this.config.rotationElementsSelector);
       if (!frontElements) {
         this.log("Front elements not found with selector:", this.config.frontElementsSelector);
       } else {
@@ -1049,6 +1068,14 @@
       event.stopPropagation();
       event.preventDefault();
       this.log("Logo clicked, toggling card rotation");
+      const logoElement = event.target;
+      const parentCard = logoElement.closest(".profile-card_wrapper, .profile-card_wrapper-mobile");
+      if (!parentCard) {
+        this.log("Could not find parent card for logo element");
+        return;
+      }
+      this.log("Found parent card:", parentCard.className);
+      this.rotationManager.setTargetCard(parentCard);
       const newState = this.rotationManager.toggleRotation();
       this.log(`Card rotation toggled to: ${newState}`);
       this.dispatchRotationEvent(newState);
@@ -1084,9 +1111,13 @@
     }
     /**
      * Manually rotate the card to show the back face
+     * @param targetCard Optional specific card to rotate (if not provided, uses first found)
      * @returns true if rotation was successful
      */
-    rotateToBack() {
+    rotateToBack(targetCard) {
+      if (targetCard) {
+        this.rotationManager.setTargetCard(targetCard);
+      }
       const success = this.rotationManager.rotateToBack();
       if (success) {
         this.dispatchRotationEvent("back" /* BACK */);
@@ -1095,9 +1126,13 @@
     }
     /**
      * Manually rotate the card to show the front face
+     * @param targetCard Optional specific card to rotate (if not provided, uses first found)
      * @returns true if rotation was successful
      */
-    rotateToFront() {
+    rotateToFront(targetCard) {
+      if (targetCard) {
+        this.rotationManager.setTargetCard(targetCard);
+      }
       const success = this.rotationManager.rotateToFront();
       if (success) {
         this.dispatchRotationEvent("front" /* FRONT */);
@@ -1106,9 +1141,13 @@
     }
     /**
      * Manually toggle the card rotation
+     * @param targetCard Optional specific card to rotate (if not provided, uses first found)
      * @returns The new rotation state
      */
-    toggle() {
+    toggle(targetCard) {
+      if (targetCard) {
+        this.rotationManager.setTargetCard(targetCard);
+      }
       const newState = this.rotationManager.toggleRotation();
       this.dispatchRotationEvent(newState);
       return newState;

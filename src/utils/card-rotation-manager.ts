@@ -59,9 +59,30 @@ export enum CardRotationState {
  */
 export class CardRotationManager {
   private config: Required<CardRotationConfig>;
+  private targetCard: HTMLElement | null = null;
 
   constructor(config: CardRotationConfig = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+  }
+
+  /**
+   * Set the target card element to operate on
+   * @param cardElement The specific card element to rotate
+   */
+  public setTargetCard(cardElement: HTMLElement): void {
+    this.targetCard = cardElement;
+    this.log('Target card set:', cardElement);
+  }
+
+  /**
+   * Find the profile card element (either target card or first match)
+   * @returns The profile card element or null
+   */
+  private findProfileCard(): HTMLElement | null {
+    if (this.targetCard) {
+      return this.targetCard;
+    }
+    return document.querySelector(this.config.profileCardSelector);
   }
 
   /**
@@ -69,7 +90,7 @@ export class CardRotationManager {
    * @returns CardRotationState.FRONT or CardRotationState.BACK
    */
   public getRotationState(): CardRotationState {
-    const profileCard = document.querySelector(this.config.profileCardSelector);
+    const profileCard = this.findProfileCard();
 
     if (!profileCard) {
       this.log('Profile card not found, assuming FRONT state');
@@ -96,7 +117,7 @@ export class CardRotationManager {
     this.log('Rotating card to show back face');
 
     // Find the profile card element
-    const profileCard = document.querySelector(this.config.profileCardSelector);
+    const profileCard = this.findProfileCard();
 
     if (!profileCard) {
       this.log('Profile card not found with selector:', this.config.profileCardSelector);
@@ -113,9 +134,14 @@ export class CardRotationManager {
     profileCard.classList.add(this.config.rotateClass);
     this.log(`Added ${this.config.rotateClass} class to profile card`);
 
-    // Find front and rotation elements
-    const frontElements = document.querySelector(this.config.frontElementsSelector);
-    const rotationElements = document.querySelector(this.config.rotationElementsSelector);
+    // Find front and rotation elements within the target card
+    const frontElements = this.targetCard
+      ? this.targetCard.querySelector(this.config.frontElementsSelector)
+      : document.querySelector(this.config.frontElementsSelector);
+
+    const rotationElements = this.targetCard
+      ? this.targetCard.querySelector(this.config.rotationElementsSelector)
+      : document.querySelector(this.config.rotationElementsSelector);
 
     if (!frontElements) {
       this.log('Front elements not found with selector:', this.config.frontElementsSelector);
@@ -145,7 +171,7 @@ export class CardRotationManager {
     this.log('Rotating card to show front face');
 
     // Find the profile card element
-    const profileCard = document.querySelector(this.config.profileCardSelector);
+    const profileCard = this.findProfileCard();
 
     if (!profileCard) {
       this.log('Profile card not found with selector:', this.config.profileCardSelector);
@@ -156,9 +182,14 @@ export class CardRotationManager {
     profileCard.classList.remove(this.config.rotateClass);
     this.log(`Removed ${this.config.rotateClass} class from profile card`);
 
-    // Find front and rotation elements
-    const frontElements = document.querySelector(this.config.frontElementsSelector);
-    const rotationElements = document.querySelector(this.config.rotationElementsSelector);
+    // Find front and rotation elements within the target card
+    const frontElements = this.targetCard
+      ? this.targetCard.querySelector(this.config.frontElementsSelector)
+      : document.querySelector(this.config.frontElementsSelector);
+
+    const rotationElements = this.targetCard
+      ? this.targetCard.querySelector(this.config.rotationElementsSelector)
+      : document.querySelector(this.config.rotationElementsSelector);
 
     if (!frontElements) {
       this.log('Front elements not found with selector:', this.config.frontElementsSelector);

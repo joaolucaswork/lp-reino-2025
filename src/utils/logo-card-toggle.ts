@@ -94,6 +94,20 @@ export class LogoCardToggle {
 
     this.log('Logo clicked, toggling card rotation');
 
+    // Find the parent card element that contains this logo
+    const logoElement = event.target as HTMLElement;
+    const parentCard = logoElement.closest('.profile-card_wrapper, .profile-card_wrapper-mobile');
+
+    if (!parentCard) {
+      this.log('Could not find parent card for logo element');
+      return;
+    }
+
+    this.log('Found parent card:', parentCard.className);
+
+    // Set the target card for the rotation manager
+    this.rotationManager.setTargetCard(parentCard as HTMLElement);
+
     // Toggle the card rotation
     const newState = this.rotationManager.toggleRotation();
 
@@ -138,9 +152,13 @@ export class LogoCardToggle {
 
   /**
    * Manually rotate the card to show the back face
+   * @param targetCard Optional specific card to rotate (if not provided, uses first found)
    * @returns true if rotation was successful
    */
-  public rotateToBack(): boolean {
+  public rotateToBack(targetCard?: HTMLElement): boolean {
+    if (targetCard) {
+      this.rotationManager.setTargetCard(targetCard);
+    }
     const success = this.rotationManager.rotateToBack();
     if (success) {
       this.dispatchRotationEvent(CardRotationState.BACK);
@@ -150,9 +168,13 @@ export class LogoCardToggle {
 
   /**
    * Manually rotate the card to show the front face
+   * @param targetCard Optional specific card to rotate (if not provided, uses first found)
    * @returns true if rotation was successful
    */
-  public rotateToFront(): boolean {
+  public rotateToFront(targetCard?: HTMLElement): boolean {
+    if (targetCard) {
+      this.rotationManager.setTargetCard(targetCard);
+    }
     const success = this.rotationManager.rotateToFront();
     if (success) {
       this.dispatchRotationEvent(CardRotationState.FRONT);
@@ -162,9 +184,13 @@ export class LogoCardToggle {
 
   /**
    * Manually toggle the card rotation
+   * @param targetCard Optional specific card to rotate (if not provided, uses first found)
    * @returns The new rotation state
    */
-  public toggle(): CardRotationState {
+  public toggle(targetCard?: HTMLElement): CardRotationState {
+    if (targetCard) {
+      this.rotationManager.setTargetCard(targetCard);
+    }
     const newState = this.rotationManager.toggleRotation();
     this.dispatchRotationEvent(newState);
     return newState;
